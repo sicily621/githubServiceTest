@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html ng-app="myApp">
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+</head>
+<body>
+<div ng-controller="ServiceController">
+    <label>username:</label><input type="text" ng-model="username"/>
+    <ul>
+        <li ng-repeat="event in events">{{ event.actor.login }} {{ event.repo.name }}</li>
+    </ul>
+</div>
+<script src="js/angular-1.3.0.js"></script>
+<script>
+    angular.module('myApp.service',[]).factory('githubService',function($http){
+        var githubUrl='https://api.github.com';
+        var runUserRequest=function(username,path){
+            //从使用jsonp调用的Github的http服务中返回promise对象
+            return $http({
+                method:'JSONP',
+                url:githubUrl+'/users/'
+                    +username+'/'+
+                        path+'?callback=JSON_CALLBACK'
+            })
+        };
+        return {
+            events:function(username){
+                return runUserRequest(username,'events')
+            }
+        }
+    });
+    angular.module('myApp',['myApp.service']).controller('ServiceController',function($scope,githubService){
+        $scope.$watch('username',function(newUsername){
+            githubService.events('sicily621').success(function(data,status,headers){
+                $scope.events=data.data;
+            });
+        })
+    })
+</script>
+</body>
+</html>
